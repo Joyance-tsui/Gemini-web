@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini UI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f0f2f5;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar {
+    background-color: #fff;
+    width: 250px;
+    height: 100%;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease-in-out;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.sidebar.collapsed {
+    width: 20px;
+    padding: 10px 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar.collapsed > *:not(.sidebar-toggle) {
+    display: none;
+}
+
+.sidebar.collapsed::before {
+    content: 'Gemini';
+    white-space: nowrap;
+    transform: rotate(-90deg);
+    transform-origin: top left;
+    margin-top: 20px;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.sidebar-toggle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px;
+    opacity: 1;
+    z-index: 10;
+}
+
+.sidebar-top {
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.model-selector {
+    margin-bottom: 15px;
+}
+
+.model-selector label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+.model-selector select {
+    width: calc(100% - 12px);
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    appearance: none;
+    background-color: white;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position-x: calc(100% - 5px);
+    background-position-y: center;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.api-key-section {
+    margin-bottom: 20px;
+}
+
+.api-key-input-area {
+    display: flex;
+    gap: 10px;
+}
+
+.api-key-input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    font-size: 0.95em;
+}
+
+.api-key-section button {
+    padding: 8px 12px;
+    border: none;
+    background-color: #4285f4;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.api-key-section button.change-api-button {
+    background-color: #fbbc05;
+    color: #333;
+}
+
+.new-chat-button button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background-color: #e8f0fe;
+    color: #1967d2;
+    border-radius: 4px;
+    text-align: left;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.2s ease-in-out;
+    font-size: 0.95em;
+}
+
+.new-chat-button button:hover {
+    background-color: #d7e3fc;
+}
+
+.new-chat-button i {
+    margin-right: 8px;
+}
+
+.recent-chats {
+    margin-bottom: 30px;
+}
+
+.recent-chats h3 {
+    margin-top: 0;
+    font-size: 0.9em;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+.recent-chats ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.recent-chats li {
+    padding: 8px 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    font-size: 0.95em;
+}
+
+.recent-chats li:hover {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    padding-left: 5px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-bottom a {
+    display: flex;
+    align-items: center;
+    color: #5f6368;
+    font-size: 0.9em;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar-bottom a:hover {
+    background-color: #f0f0f0;
+}
+
+.sidebar-bottom i {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-message {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.welcome-message h1 {
+    font-size: 2.5em;
+    background-image: linear-gradient(to right, #4285f4, #ea4335);
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 10px;
+}
+
+.welcome-message p {
+    color: #555;
+    font-size: 1.1em;
+}
+
+.input-area {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    border-radius: 25px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 12px 20px;
+    border: none;
+    outline: none;
+    font-size: 1em;
+}
+
+.input-area button.mic-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-right: 15px;
+    font-size: 1.2em;
+    color: #4285f4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        position: relative;
+    }
+    .sidebar.collapsed {
+        width: 0;
+        padding: 0;
+    }
+    .sidebar.collapsed > *:not(.sidebar-toggle) {
+        display: none;
+    }
+    .sidebar-toggle {
+        opacity: 1;
+        top: 10px;
+        left: 10px;
+    }
+    .main-content {
+        padding: 20px;
+    }
+    .input-area {
+        max-width: 100%;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
+            <div class="sidebar-top">
+                <div class="model-selector">
+                    <label for="model-dropdown">Model</label>
+                    <select id="model-dropdown">
+                        <option value="gemini-2.0-flash-thinking-exp-1219">Gemini 2.0 Flash (Thinking)</option>
+                        <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash</option>
+                        <option value="gemini-exp-1206">Gemini (Experimental)</option>
+                        <option value="learnlm-1.5-pro-experimental">LearnLM 1.5 Pro (Experimental)</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                        <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="api-key-section">
+                <label for="api-key">API Key</label>
+                <div class="api-key-input-area" id="api-key-input-area">
+                    <input type="text" id="api-key" placeholder="Enter your API key">
+                    <button id="save-api-key">Save API</button>
+                </div>
+                <button id="change-api-key" class="change-api-button" style="display: none;">Change API</button>
+            </div>
+
+            <div class="new-chat-button">
+                <button><i class="fas fa-plus"></i> New chat</button>
+            </div>
+            <div class="recent-chats">
+                <h3>Recent</h3>
+                <ul id="recent-list">
+                    <li>Who Are You?</li>
+                </ul>
+            </div>
+            <div class="sidebar-bottom">
+                <a href="#" title="Help"><i class="fas fa-question-circle"></i> Help</a>
+                <a href="#" title="History"><i class="fas fa-history"></i> History</a>
+                <a href="#" title="Settings"><i class="fas fa-cog"></i> Settings</a>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="welcome-message">
+                <h1>Hello, Joyance</h1>
+                <p>Start a new conversation or select from recent chats.</p>
+            </div>
+            <div class="input-area">
+                <input type="text" id="prompt-input" placeholder="Ask Gemini">
+                <button class="mic-button"><i class="fas fa-microphone"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const modelDropdown = document.getElementById('model-dropdown');
+            const recentList = document.getElementById('recent-list');
+            const promptInput = document.getElementById('prompt-input');
+            const apiKeyInputArea = document.getElementById('api-key-input-area');
+            const apiKeyInput = document.getElementById('api-key');
+            const saveApiKeyButton = document.getElementById('save-api-key');
+            const changeApiKeyButton = document.getElementById('change-api-key');
+
+            // Helper function to set a cookie
+            function setCookie(name, value, days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                const expires = "expires=" + date.toUTCString();
+                document.cookie = name + "=" + value + ";" + expires + ";path=/";
+                console.log(`[setCookie] Setting cookie: ${name}=${value}`);
+            }
+
+            // Helper function to get a cookie
+            function getCookie(name) {
+                const cookieName = name + "=";
+                const decodedCookie = decodeURIComponent(document.cookie);
+                const ca = decodedCookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(cookieName) === 0) {
+                        const cookieValue = c.substring(cookieName.length, c.length);
+                        console.log(`[getCookie] Retrieved cookie: ${name}=${cookieValue}`);
+                        return cookieValue;
+                    }
+                }
+                console.log(`[getCookie] Cookie not found: ${name}`);
+                return "";
+            }
+
+            // Load API key from cookie
+            const storedApiKey = getCookie('geminiApiKey');
+            if (storedApiKey) {
+                apiKeyInput.value = storedApiKey;
+                apiKeyInputArea.style.display = 'none';
+                changeApiKeyButton.style.display = 'block';
+            } else {
+                console.log("[DOMContentLoaded] No API key found in cookie.");
+            }
+
+            // Event listener for Save API Key button
+            saveApiKeyButton.addEventListener('click', () => {
+                const apiKey = apiKeyInput.value.trim();
+                if (apiKey) {
+                    setCookie('geminiApiKey', apiKey, 30); // Save for 30 days
+                    apiKeyInputArea.style.display = 'none';
+                    changeApiKeyButton.style.display = 'block';
+                } else {
+                    alert('Please enter your API key.');
+                }
+            });
+
+            // Event listener for Change API Key button
+            changeApiKeyButton.addEventListener('click', () => {
+                apiKeyInputArea.style.display = 'flex';
+                changeApiKeyButton.style.display = 'none';
+                apiKeyInput.value = ''; // Clear the input for new API key
+            });
+
+            // Sidebar toggle functionality
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            modelDropdown.addEventListener('change', () => {
+                console.log('Selected model:', modelDropdown.value);
+                // You would potentially trigger an API call or update UI elements here
+            });
+
+            function addRecentChat(message) {
+                const listItem = document.createElement('li');
+                listItem.textContent = message;
+                recentList.appendChild(listItem);
+            }
+
+            promptInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    const prompt = promptInput.value.trim();
+                    const apiKey = getCookie('geminiApiKey');
+                    const selectedModel = modelDropdown.value;
+
+                    console.log("[promptInput] Checking API Key:", apiKey);
+
+                    if (prompt && apiKey) {
+                        console.log('User asked:', prompt);
+                        console.log('Using API Key:', apiKey);
+                        console.log('Using Model:', selectedModel);
+                        addRecentChat(prompt);
+                        promptInput.value = '';
+
+                        // Basic fetch API call (replace with your actual implementation)
+                        fetch('YOUR_GEMINI_API_ENDPOINT', {
+                            method: 'POST', // Or 'GET' depending on your API
+                            headers: {
+                                'Content-Type': 'application/json', // Adjust if needed
+                                'Authorization': `Bearer ${apiKey}` // Or however your API requires authentication
+                            },
+                            body: JSON.stringify({
+                                prompt: prompt,
+                                model: selectedModel
+                                // Add any other necessary parameters
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Gemini response:', data);
+                            // **Here you would handle the response and display it in the UI**
+                        })
+                        .catch(error => {
+                            console.error('Error calling Gemini API:', error);
+                            // **Handle errors appropriately**
+                        });
+
+                    } else if (!apiKey) {
+                        alert('Please enter and save your API key.');
+                    }
+                }
+            });
+
+            // Local Storage for Recent Chats (Basic)
+            function saveRecentChats() {
+                const chats = Array.from(recentList.children).map(li => li.textContent);
+                localStorage.setItem('recentChats', JSON.stringify(chats));
+            }
+
+            function loadRecentChats() {
+                const savedChats = localStorage.getItem('recentChats');
+                if (savedChats) {
+                    const chats = JSON.parse(savedChats);
+                    chats.forEach(chat => addRecentChat(chat));
+                }
+            }
+
+            loadRecentChats();
+        });
+    </script>
+</body>
+</html>
