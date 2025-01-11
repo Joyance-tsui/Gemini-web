@@ -35,26 +35,12 @@
         }
 
         .sidebar.collapsed {
-            width: 20px;
-            padding: 10px 0;
+            width: 0;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         .sidebar.collapsed > *:not(.sidebar-toggle) {
             display: none;
-        }
-
-        .sidebar.collapsed::before {
-            content: 'Gemini';
-            white-space: nowrap;
-            transform: rotate(-90deg);
-            transform-origin: top left;
-            margin-top: 20px;
-            color: #555;
-            font-size: 0.9em;
         }
 
         .sidebar-toggle {
@@ -155,33 +141,6 @@
             padding-left: 5px;
         }
 
-        .sidebar-bottom {
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .sidebar-bottom a {
-            display: flex;
-            align-items: center;
-            color: #5f6368;
-            font-size: 0.9em;
-            text-decoration: none;
-            padding: 8px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease-in-out;
-        }
-
-        .sidebar-bottom a:hover {
-            background-color: #f0f0f0;
-        }
-
-        .sidebar-bottom i {
-            margin-right: 8px;
-            font-size: 1.1em;
-        }
-
         .main-content {
             flex-grow: 1;
             padding: 20px;
@@ -194,9 +153,15 @@
             width: 100%;
             max-width: 700px;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 10px;
+        }
+
+        .chat-header label {
+            margin-right: 10px;
+            font-size: 0.9em;
+            color: #777;
         }
 
         .chat-header select {
@@ -346,6 +311,7 @@
         </aside>
         <main class="main-content">
             <div id="chat-header" class="chat-header">
+                <label for="model-dropdown">Model:</label>
                 <select id="model-dropdown">
                     <option value="gemini-2.0-flash-thinking-exp-1219">Gemini 2.0 Flash (Thinking)</option>
                     <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash</option>
@@ -381,7 +347,7 @@
             const historyList = document.getElementById('history-list');
 
             let chatHistory = [];
-            let currentChatId = null; // To identify the current conversation
+            let currentChatId = null;
 
             // Helper functions for cookies
             function setCookie(name, value, days) {
@@ -457,7 +423,7 @@
             }
 
             function startNewChat() {
-                currentChatId = Date.now().toString(); // Unique ID for the new chat
+                currentChatId = Date.now().toString();
                 chatHistory = [];
                 chatArea.innerHTML = '';
                 const initialAiMessage = 'Hello, how can I help you today?';
@@ -467,20 +433,16 @@
             }
 
             function loadChatHistory() {
-                const savedHistory = localStorage.getItem('chatHistory');
-                if (savedHistory) {
-                    // For simplicity, loading all history. In real app, manage individual chats.
-                    const parsedHistory = JSON.parse(savedHistory);
-                    historyList.innerHTML = '';
-                    parsedHistory.forEach(chat => {
-                        const li = document.createElement('li');
-                        li.textContent = `Chat started ${new Date(parseInt(chat.id)).toLocaleString()}`;
-                        li.addEventListener('click', () => {
-                            loadExistingChat(chat.id, chat.history);
-                        });
-                        historyList.appendChild(li);
+                const savedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+                historyList.innerHTML = '';
+                savedHistory.forEach(chat => {
+                    const li = document.createElement('li');
+                    li.textContent = `Chat started ${new Date(parseInt(chat.id)).toLocaleString()}`;
+                    li.addEventListener('click', () => {
+                        loadExistingChat(chat.id, chat.history);
                     });
-                }
+                    historyList.appendChild(li);
+                });
             }
 
             function saveChatHistory() {
@@ -522,7 +484,7 @@
                         saveChatHistory();
 
                         try {
-                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', { // Replace with your actual endpoint
+                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -544,10 +506,15 @@
                             }
 
                             const data = await response.json();
-                            const aiResponse = data.candidates[0].content.parts[0].text; // Adjust based on actual response structure
-                            displayMessage('ai', aiResponse);
-                            chatHistory.push({ sender: 'ai', text: aiResponse });
-                            saveChatHistory();
+                            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                                const aiResponse = data.candidates[0].content.parts[0].text;
+                                displayMessage('ai', aiResponse);
+                                chatHistory.push({ sender: 'ai', text: aiResponse });
+                                saveChatHistory();
+                            } else {
+                                console.error('Gemini API Response Error: Unexpected response format', data);
+                                displayMessage('ai', 'Sorry, I received an unexpected response from the AI.');
+                            }
 
                         } catch (error) {
                             console.error('Error calling Gemini API:', error);
@@ -560,9 +527,18 @@
                 }
             });
 
-            loadChatHistory(); // Load history on page load
-            if (!chatHistory.length) {
-                startNewChat(); // Start a new chat if no history
+            loadChatHistory();
+            if (!chatHistory.length && !localStorage.getItem('chatHistory')) {
+                startNewChat();
+            } else if (!currentChatId && localStorage.getItem('chatHistory')) {
+                // Load the latest chat if available but no currentChatId
+                const savedHistory = JSON.parse(localStorage.getItem('chatHistory'));
+                if (savedHistory.length > 0) {
+                    const latestChat = savedHistory.pop();
+                    loadExistingChat(latestChat.id, latestChat.history);
+                } else {
+                    startNewChat();
+                }
             }
         });
     </script>
