@@ -6,7 +6,6 @@
     <title>Gemini UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* ... (Your existing CSS styles) ... */
         body {
             font-family: sans-serif;
             margin: 0;
@@ -349,8 +348,9 @@
 
             let chatHistory = [];
             let currentChatId = null;
+            let geminiApiKey = getCookie('geminiApiKey'); // Get API key
 
-            // Helper functions for cookies
+            // Helper functions for cookies (remains the same)
             function setCookie(name, value, days) {
                 const date = new Date();
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -375,18 +375,18 @@
             }
 
             // Load API key from cookie
-            const storedApiKey = getCookie('geminiApiKey');
-            if (storedApiKey) {
-                apiKeyInput.value = storedApiKey;
+            if (geminiApiKey) {
+                apiKeyInput.value = geminiApiKey;
                 apiKeyInputArea.style.display = 'none';
                 changeApiKeyButton.style.display = 'block';
             }
 
-            // Event listeners for API Key management
+            // Event listeners for API Key management (remains the same)
             saveApiKeyButton.addEventListener('click', () => {
                 const apiKey = apiKeyInput.value.trim();
                 if (apiKey) {
                     setCookie('geminiApiKey', apiKey, 30);
+                    geminiApiKey = apiKey; // Update the variable
                     apiKeyInputArea.style.display = 'none';
                     changeApiKeyButton.style.display = 'block';
                 } else {
@@ -400,7 +400,7 @@
                 apiKeyInput.value = '';
             });
 
-            // Sidebar toggle
+            // Sidebar toggle (remains the same)
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
             });
@@ -473,32 +473,35 @@
             promptInput.addEventListener('keydown', async (event) => {
                 if (event.key === 'Enter') {
                     const prompt = promptInput.value.trim();
-                    const apiKey = getCookie('geminiApiKey');
                     const selectedModel = modelDropdown.value;
 
                     if (!currentChatId) {
                         startNewChat();
                     }
 
-                    if (prompt && apiKey) {
+                    if (prompt && geminiApiKey) {
                         displayMessage('user', prompt);
                         chatHistory.push({ sender: 'user', text: prompt });
-                        saveChatHistory(); // Save immediately after user message
+                        saveChatHistory();
                         promptInput.value = '';
 
                         try {
-                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', { // Ensure this is the CORRECT endpoint
+                            // **🔑 IMPORTANT: Replace with the CORRECT Gemini API endpoint for starting/continuing a chat session**
+                            const API_ENDPOINT = 'YOUR_GEMINI_CHAT_API_ENDPOINT'; //  <-----  CHANGE THIS!
+
+                            const response = await fetch(API_ENDPOINT, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${apiKey}`
+                                    'Authorization': `Bearer ${geminiApiKey}`
                                 },
                                 body: JSON.stringify({
+                                    model: selectedModel,
                                     messages: chatHistory.map(msg => ({
                                         role: msg.sender === 'user' ? 'user' : 'assistant',
                                         parts: [{ text: msg.text }]
-                                    })),
-                                    model: selectedModel
+                                    }))
+                                    // ** Potentially add a "stream" or similar parameter if the API supports streaming **
                                 })
                             });
 
@@ -509,15 +512,16 @@
                             }
 
                             const data = await response.json();
+                            // **🔑  Adapt this part based on the RESPONSE format of your Gemini Chat API **
                             let aiResponse = null;
-                            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
+                            if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
                                 aiResponse = data.candidates[0].content.parts.map(part => part.text).join("");
                             }
 
                             if (aiResponse) {
                                 displayMessage('ai', aiResponse);
                                 chatHistory.push({ sender: 'ai', text: aiResponse });
-                                saveChatHistory(); // Save immediately after AI response
+                                saveChatHistory();
                             } else {
                                 console.error('Gemini API Response Error: Unexpected response format', data);
                                 displayMessage('ai', 'Sorry, I received an unexpected response from the AI.');
@@ -528,7 +532,7 @@
                             displayMessage('ai', 'Sorry, I encountered an error.');
                         }
 
-                    } else if (!apiKey) {
+                    } else if (!geminiApiKey) {
                         alert('Please enter and save your API key.');
                     }
                 }
