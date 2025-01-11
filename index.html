@@ -156,36 +156,6 @@
             margin-right: 8px;
         }
 
-        .recent-chats {
-            margin-bottom: 30px;
-        }
-
-        .recent-chats h3 {
-            margin-top: 0;
-            font-size: 0.9em;
-            color: #777;
-            margin-bottom: 10px;
-        }
-
-        .recent-chats ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .recent-chats li {
-            padding: 8px 0;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-            font-size: 0.95em;
-        }
-
-        .recent-chats li:hover {
-            background-color: #f0f0f0;
-            border-radius: 4px;
-            padding-left: 5px;
-        }
-
         .sidebar-bottom {
             margin-top: auto;
             display: flex;
@@ -215,10 +185,24 @@
 
         .main-content {
             flex-grow: 1;
-            padding: 20px; /* Reduced padding */
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        .settings-area, .history-area {
+            width: 100%;
+            max-width: 700px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .settings-area h2, .history-area h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
         }
 
         .chat-area {
@@ -230,6 +214,8 @@
             display: flex;
             flex-direction: column;
             margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
 
         .message {
@@ -341,18 +327,31 @@
             <div class="new-chat-button">
                 <button><i class="fas fa-plus"></i> New chat</button>
             </div>
-            <div class="recent-chats">
-                <h3>Recent</h3>
-                <ul id="recent-list">
-                    </ul>
-            </div>
             <div class="sidebar-bottom">
+                <a href="#" id="show-history-btn" title="History"><i class="fas fa-history"></i> History</a>
+                <a href="#" id="show-settings-btn" title="Settings"><i class="fas fa-cog"></i> Settings</a>
                 <a href="#" title="Help"><i class="fas fa-question-circle"></i> Help</a>
-                <a href="#" title="History"><i class="fas fa-history"></i> History</a>
-                <a href="#" title="Settings"><i class="fas fa-cog"></i> Settings</a>
             </div>
         </aside>
         <main class="main-content">
+            <div id="settings-area" class="settings-area" style="display: none;">
+                <h2>Settings</h2>
+                <p>API Key: <span id="display-api-key"></span> <button id="change-api-inline">Change</button></p>
+                <div id="inline-api-change" style="display: none;">
+                    <input type="text" id="new-api-key-inline" placeholder="New API Key">
+                    <button id="save-api-inline">Save</button>
+                    <button id="cancel-api-inline">Cancel</button>
+                </div>
+                <p>Model: <select id="display-model"></select></p>
+                <!-- Add more settings as needed -->
+            </div>
+
+            <div id="history-area" class="history-area" style="display: none;">
+                <h2>Chat History</h2>
+                <ul id="history-list">
+                    </ul>
+            </div>
+
             <div id="chat-area" class="chat-area">
                 <div class="ai-message message">Hello, how can I help you today?</div>
             </div>
@@ -364,11 +363,10 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const sidebar = document.querySelector('.sidebar');
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const modelDropdown = document.getElementById('model-dropdown');
-            const recentList = document.getElementById('recent-list');
             const promptInput = document.getElementById('prompt-input');
             const apiKeyInputArea = document.getElementById('api-key-input-area');
             const apiKeyInput = document.getElementById('api-key');
@@ -376,10 +374,22 @@
             const changeApiKeyButton = document.getElementById('change-api-key');
             const chatArea = document.getElementById('chat-area');
             const newChatButton = document.querySelector('.new-chat-button button');
+            const historyArea = document.getElementById('history-area');
+            const historyList = document.getElementById('history-list');
+            const showHistoryBtn = document.getElementById('show-history-btn');
+            const settingsArea = document.getElementById('settings-area');
+            const showSettingsBtn = document.getElementById('show-settings-btn');
+            const displayApiKey = document.getElementById('display-api-key');
+            const displayModel = document.getElementById('display-model');
+            const changeApiInlineBtn = document.getElementById('change-api-inline');
+            const inlineApiChangeDiv = document.getElementById('inline-api-change');
+            const newApiKeyInlineInput = document.getElementById('new-api-key-inline');
+            const saveApiInlineBtn = document.getElementById('save-api-inline');
+            const cancelApiInlineBtn = document.getElementById('cancel-api-inline');
 
-            let chatHistory = [{ sender: "ai", text: "Hello, how can I help you today?" }]; // Initialize chat history
+            let chatHistory = [{ sender: "ai", text: "Hello, how can I help you today?" }];
 
-            // Helper function to set a cookie
+            // Helper functions for cookies (same as before)
             function setCookie(name, value, days) {
                 const date = new Date();
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -387,7 +397,6 @@
                 document.cookie = name + "=" + value + ";" + expires + ";path=/";
             }
 
-            // Helper function to get a cookie
             function getCookie(name) {
                 const cookieName = name + "=";
                 const decodedCookie = decodeURIComponent(document.cookie);
@@ -410,34 +419,88 @@
                 apiKeyInput.value = storedApiKey;
                 apiKeyInputArea.style.display = 'none';
                 changeApiKeyButton.style.display = 'block';
+                displayApiKey.textContent = storedApiKey.substring(0, 4) + '...' + storedApiKey.slice(-4);
             }
 
-            // Event listener for Save API Key button
+            // Event listeners for API Key management
             saveApiKeyButton.addEventListener('click', () => {
                 const apiKey = apiKeyInput.value.trim();
                 if (apiKey) {
-                    setCookie('geminiApiKey', apiKey, 30); // Save for 30 days
+                    setCookie('geminiApiKey', apiKey, 30);
                     apiKeyInputArea.style.display = 'none';
                     changeApiKeyButton.style.display = 'block';
+                    displayApiKey.textContent = apiKey.substring(0, 4) + '...' + apiKey.slice(-4);
                 } else {
                     alert('Please enter your API key.');
                 }
             });
 
-            // Event listener for Change API Key button
             changeApiKeyButton.addEventListener('click', () => {
                 apiKeyInputArea.style.display = 'flex';
                 changeApiKeyButton.style.display = 'none';
-                apiKeyInput.value = ''; // Clear the input for new API key
+                apiKeyInput.value = '';
             });
 
-            // Sidebar toggle functionality
+            changeApiInlineBtn.addEventListener('click', () => {
+                inlineApiChangeDiv.style.display = 'block';
+            });
+
+            cancelApiInlineBtn.addEventListener('click', () => {
+                inlineApiChangeDiv.style.display = 'none';
+            });
+
+            saveApiInlineBtn.addEventListener('click', () => {
+                const newApiKey = newApiKeyInlineInput.value.trim();
+                if (newApiKey) {
+                    setCookie('geminiApiKey', newApiKey, 30);
+                    displayApiKey.textContent = newApiKey.substring(0, 4) + '...' + newApiKey.slice(-4);
+                    inlineApiChangeDiv.style.display = 'none';
+                } else {
+                    alert('Please enter the new API key.');
+                }
+            });
+
+            // Sidebar toggle
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
             });
 
-            modelDropdown.addEventListener('change', () => {
-                console.log('Selected model:', modelDropdown.value);
+            // Populate model dropdown in settings
+            const modelOptions = Array.from(modelDropdown.options).map(option => ({ value: option.value, text: option.text }));
+            modelOptions.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                displayModel.appendChild(optionElement);
+            });
+            displayModel.value = modelDropdown.value;
+            displayModel.addEventListener('change', () => {
+                modelDropdown.value = displayModel.value;
+            });
+
+            // Navigation for History and Settings
+            showHistoryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                historyArea.style.display = 'block';
+                chatArea.style.display = 'none';
+                settingsArea.style.display = 'none';
+            });
+
+            showSettingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                settingsArea.style.display = 'block';
+                chatArea.style.display = 'none';
+                historyArea.style.display = 'none';
+            });
+
+            newChatButton.addEventListener('click', () => {
+                chatHistory = [];
+                chatArea.innerHTML = '';
+                displayMessage('ai', 'Hello, how can I help you today?');
+                chatHistory.push({ sender: 'ai', text: 'Hello, how can I help you today?' });
+                chatArea.style.display = 'flex';
+                historyArea.style.display = 'none';
+                settingsArea.style.display = 'none';
             });
 
             function displayMessage(sender, message) {
@@ -445,15 +508,17 @@
                 messageDiv.classList.add('message', `${sender}-message`);
                 messageDiv.textContent = message;
                 chatArea.appendChild(messageDiv);
-                chatArea.scrollTop = chatArea.scrollHeight; // Scroll to bottom
+                chatArea.scrollTop = chatArea.scrollHeight;
             }
 
-            newChatButton.addEventListener('click', () => {
-                chatHistory = [];
-                chatArea.innerHTML = ''; // Clear the chat area
-                displayMessage('ai', 'Hello, how can I help you today?');
-                chatHistory.push({ sender: 'ai', text: 'Hello, how can I help you today?' });
-            });
+            function displayHistory() {
+                historyList.innerHTML = ''; // Clear previous history
+                chatHistory.forEach(msg => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${msg.sender}: ${msg.text}`;
+                    historyList.appendChild(listItem);
+                });
+            }
 
             promptInput.addEventListener('keydown', async (event) => {
                 if (event.key === 'Enter') {
@@ -465,6 +530,7 @@
                         displayMessage('user', prompt);
                         chatHistory.push({ sender: 'user', text: prompt });
                         promptInput.value = '';
+                        displayHistory(); // Update history after user message
 
                         try {
                             const response = await fetch('YOUR_GEMINI_API_ENDPOINT', {
@@ -474,19 +540,22 @@
                                     'Authorization': `Bearer ${apiKey}`
                                 },
                                 body: JSON.stringify({
-                                    messages: chatHistory, // Send the entire chat history
+                                    messages: chatHistory,
                                     model: selectedModel
                                 })
                             });
 
                             if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
+                                const errorData = await response.json();
+                                console.error('Gemini API Error:', errorData);
+                                throw new Error(`HTTP error! status: ${response.status}, ${errorData.error?.message || 'Unknown error'}`);
                             }
 
                             const data = await response.json();
-                            const aiResponse = data.response; // Adjust based on your API response structure
+                            const aiResponse = data.response;
                             displayMessage('ai', aiResponse);
                             chatHistory.push({ sender: 'ai', text: aiResponse });
+                            displayHistory(); // Update history after AI response
 
                         } catch (error) {
                             console.error('Error calling Gemini API:', error);
@@ -498,21 +567,7 @@
                     }
                 }
             });
-
-            // Load Recent Chats (Placeholder - needs backend integration for real history)
-            function loadRecentChats() {
-                // In a real application, this would fetch recent chats from a backend
-                const recentChats = ["What is the capital of France?", "Explain quantum physics.", "Write a short poem about the moon."];
-                recentChats.forEach(chat => {
-                    const li = document.createElement('li');
-                    li.textContent = chat;
-                    recentList.appendChild(li);
-                    li.addEventListener('click', () => {
-                        promptInput.value = chat; // Populate input for re-sending or editing
-                    });
-                });
-            }
-            loadRecentChats();
+            displayHistory(); // Initial display of history
         });
     </script>
 </body>
