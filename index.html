@@ -6,6 +6,7 @@
     <title>Gemini UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* ... (Your existing CSS styles) ... */
         body {
             font-family: sans-serif;
             margin: 0;
@@ -446,14 +447,16 @@
             }
 
             function saveChatHistory() {
-                const savedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-                const existingChatIndex = savedHistory.findIndex(chat => chat.id === currentChatId);
-                if (existingChatIndex > -1) {
-                    savedHistory[existingChatIndex] = { id: currentChatId, history: chatHistory };
-                } else {
-                    savedHistory.push({ id: currentChatId, history: chatHistory });
+                if (currentChatId) {
+                    const savedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+                    const existingChatIndex = savedHistory.findIndex(chat => chat.id === currentChatId);
+                    if (existingChatIndex > -1) {
+                        savedHistory[existingChatIndex] = { id: currentChatId, history: chatHistory };
+                    } else {
+                        savedHistory.push({ id: currentChatId, history: chatHistory });
+                    }
+                    localStorage.setItem('chatHistory', JSON.stringify(savedHistory));
                 }
-                localStorage.setItem('chatHistory', JSON.stringify(savedHistory));
             }
 
             function loadExistingChat(chatId, history) {
@@ -480,11 +483,11 @@
                     if (prompt && apiKey) {
                         displayMessage('user', prompt);
                         chatHistory.push({ sender: 'user', text: prompt });
+                        saveChatHistory(); // Save immediately after user message
                         promptInput.value = '';
-                        saveChatHistory();
 
                         try {
-                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', {
+                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', { // Ensure this is the CORRECT endpoint
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -506,11 +509,15 @@
                             }
 
                             const data = await response.json();
-                            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-                                const aiResponse = data.candidates[0].content.parts[0].text;
+                            let aiResponse = null;
+                            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
+                                aiResponse = data.candidates[0].content.parts.map(part => part.text).join("");
+                            }
+
+                            if (aiResponse) {
                                 displayMessage('ai', aiResponse);
                                 chatHistory.push({ sender: 'ai', text: aiResponse });
-                                saveChatHistory();
+                                saveChatHistory(); // Save immediately after AI response
                             } else {
                                 console.error('Gemini API Response Error: Unexpected response format', data);
                                 displayMessage('ai', 'Sorry, I received an unexpected response from the AI.');
@@ -528,13 +535,12 @@
             });
 
             loadChatHistory();
-            if (!chatHistory.length && !localStorage.getItem('chatHistory')) {
+            if (!localStorage.getItem('chatHistory')) {
                 startNewChat();
-            } else if (!currentChatId && localStorage.getItem('chatHistory')) {
-                // Load the latest chat if available but no currentChatId
+            } else if (!currentChatId) {
                 const savedHistory = JSON.parse(localStorage.getItem('chatHistory'));
-                if (savedHistory.length > 0) {
-                    const latestChat = savedHistory.pop();
+                if (savedHistory && savedHistory.length > 0) {
+                    const latestChat = savedHistory[savedHistory.length - 1];
                     loadExistingChat(latestChat.id, latestChat.history);
                 } else {
                     startNewChat();
