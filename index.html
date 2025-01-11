@@ -6,300 +6,308 @@
     <title>Gemini UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-body {
-    font-family: sans-serif;
-    margin: 0;
-    background-color: #f0f2f5;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-}
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-.container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
 
-.sidebar {
-    background-color: #fff;
-    width: 250px;
-    height: 100%;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s ease-in-out;
-    overflow-x: hidden;
-    position: relative;
-}
+        .sidebar {
+            background-color: #fff;
+            width: 250px;
+            height: 100%;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease-in-out;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-.sidebar.collapsed {
-    width: 20px;
-    padding: 10px 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        .sidebar.collapsed {
+            width: 20px;
+            padding: 10px 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.sidebar.collapsed > *:not(.sidebar-toggle) {
-    display: none;
-}
+        .sidebar.collapsed > *:not(.sidebar-toggle) {
+            display: none;
+        }
 
-.sidebar.collapsed::before {
-    content: 'Gemini';
-    white-space: nowrap;
-    transform: rotate(-90deg);
-    transform-origin: top left;
-    margin-top: 20px;
-    color: #555;
-    font-size: 0.9em;
-}
+        .sidebar.collapsed::before {
+            content: 'Gemini';
+            white-space: nowrap;
+            transform: rotate(-90deg);
+            transform-origin: top left;
+            margin-top: 20px;
+            color: #555;
+            font-size: 0.9em;
+        }
 
-.sidebar-toggle {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: none;
-    border: none;
-    font-size: 1.2em;
-    cursor: pointer;
-    padding: 5px;
-    opacity: 1;
-    z-index: 10;
-}
+        .sidebar-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            opacity: 1;
+            z-index: 10;
+        }
 
-.sidebar-top {
-    margin-top: 30px;
-    margin-bottom: 20px;
-}
+        .sidebar-top {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
 
-.model-selector {
-    margin-bottom: 15px;
-}
+        .model-selector {
+            margin-bottom: 15px;
+        }
 
-.model-selector label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-    color: #777;
-}
+        .model-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #777;
+        }
 
-.model-selector select {
-    width: calc(100% - 12px);
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    appearance: none;
-    background-color: white;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-    background-repeat: no-repeat;
-    background-position-x: calc(100% - 5px);
-    background-position-y: center;
-    cursor: pointer;
-    font-size: 0.95em;
-}
+        .model-selector select {
+            width: calc(100% - 12px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            appearance: none;
+            background-color: white;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: calc(100% - 5px);
+            background-position-y: center;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
 
-.api-key-section {
-    margin-bottom: 20px;
-}
+        .api-key-section {
+            margin-bottom: 20px;
+        }
 
-.api-key-input-area {
-    display: flex;
-    gap: 10px;
-}
+        .api-key-input-area {
+            display: flex;
+            gap: 10px;
+        }
 
-.api-key-input-area input[type="text"] {
-    flex-grow: 1;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    outline: none;
-    font-size: 0.95em;
-}
+        .api-key-input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.95em;
+        }
 
-.api-key-section button {
-    padding: 8px 12px;
-    border: none;
-    background-color: #4285f4;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.95em;
-}
+        .api-key-section button {
+            padding: 8px 12px;
+            border: none;
+            background-color: #4285f4;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
 
-.api-key-section button.change-api-button {
-    background-color: #fbbc05;
-    color: #333;
-}
+        .api-key-section button.change-api-button {
+            background-color: #fbbc05;
+            color: #333;
+        }
 
-.new-chat-button button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    background-color: #e8f0fe;
-    color: #1967d2;
-    border-radius: 4px;
-    text-align: left;
-    cursor: pointer;
-    margin-bottom: 15px;
-    transition: background-color 0.2s ease-in-out;
-    font-size: 0.95em;
-}
+        .new-chat-button button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #e8f0fe;
+            color: #1967d2;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background-color 0.2s ease-in-out;
+            font-size: 0.95em;
+        }
 
-.new-chat-button button:hover {
-    background-color: #d7e3fc;
-}
+        .new-chat-button button:hover {
+            background-color: #d7e3fc;
+        }
 
-.new-chat-button i {
-    margin-right: 8px;
-}
+        .new-chat-button i {
+            margin-right: 8px;
+        }
 
-.recent-chats {
-    margin-bottom: 30px;
-}
+        .recent-chats {
+            margin-bottom: 30px;
+        }
 
-.recent-chats h3 {
-    margin-top: 0;
-    font-size: 0.9em;
-    color: #777;
-    margin-bottom: 10px;
-}
+        .recent-chats h3 {
+            margin-top: 0;
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 10px;
+        }
 
-.recent-chats ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+        .recent-chats ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.recent-chats li {
-    padding: 8px 0;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-    font-size: 0.95em;
-}
+        .recent-chats li {
+            padding: 8px 0;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-size: 0.95em;
+        }
 
-.recent-chats li:hover {
-    background-color: #f0f0f0;
-    border-radius: 4px;
-    padding-left: 5px;
-}
+        .recent-chats li:hover {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            padding-left: 5px;
+        }
 
-.sidebar-bottom {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .sidebar-bottom {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-.sidebar-bottom a {
-    display: flex;
-    align-items: center;
-    color: #5f6368;
-    font-size: 0.9em;
-    text-decoration: none;
-    padding: 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s ease-in-out;
-}
+        .sidebar-bottom a {
+            display: flex;
+            align-items: center;
+            color: #5f6368;
+            font-size: 0.9em;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease-in-out;
+        }
 
-.sidebar-bottom a:hover {
-    background-color: #f0f0f0;
-}
+        .sidebar-bottom a:hover {
+            background-color: #f0f0f0;
+        }
 
-.sidebar-bottom i {
-    margin-right: 8px;
-    font-size: 1.1em;
-}
+        .sidebar-bottom i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
 
-.main-content {
-    flex-grow: 1;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
+        .main-content {
+            flex-grow: 1;
+            padding: 20px; /* Reduced padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.welcome-message {
-    text-align: center;
-    margin-bottom: 40px;
-}
+        .chat-area {
+            width: 100%;
+            max-width: 700px;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
 
-.welcome-message h1 {
-    font-size: 2.5em;
-    background-image: linear-gradient(to right, #4285f4, #ea4335);
-    -webkit-background-clip: text;
-    color: transparent;
-    margin-bottom: 10px;
-}
+        .message {
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
 
-.welcome-message p {
-    color: #555;
-    font-size: 1.1em;
-}
+        .user-message {
+            background-color: #e8f0fe;
+            align-self: flex-end;
+        }
 
-.input-area {
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    align-items: center;
-    margin-top: 20px;
-    border-radius: 25px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
+        .ai-message {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+        }
 
-.input-area input[type="text"] {
-    flex-grow: 1;
-    padding: 12px 20px;
-    border: none;
-    outline: none;
-    font-size: 1em;
-}
+        .input-area {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            align-items: center;
+            border-radius: 25px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
 
-.input-area button.mic-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-left: 10px;
-    margin-right: 15px;
-    font-size: 1.2em;
-    color: #4285f4;
-}
+        .input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border: none;
+            outline: none;
+            font-size: 1em;
+        }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        height: auto;
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        position: relative;
-    }
-    .sidebar.collapsed {
-        width: 0;
-        padding: 0;
-    }
-    .sidebar.collapsed > *:not(.sidebar-toggle) {
-        display: none;
-    }
-    .sidebar-toggle {
-        opacity: 1;
-        top: 10px;
-        left: 10px;
-    }
-    .main-content {
-        padding: 20px;
-    }
-    .input-area {
-        max-width: 100%;
-    }
-}
+        .input-area button.mic-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-right: 15px;
+            font-size: 1.2em;
+            color: #4285f4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 10px;
+                border-bottom: 1px solid #eee;
+                position: relative;
+            }
+            .sidebar.collapsed {
+                width: 0;
+                padding: 0;
+            }
+            .sidebar.collapsed > *:not(.sidebar-toggle) {
+                display: none;
+            }
+            .sidebar-toggle {
+                opacity: 1;
+                top: 10px;
+                left: 10px;
+            }
+            .main-content {
+                padding: 10px;
+            }
+            .input-area {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -336,8 +344,7 @@ body {
             <div class="recent-chats">
                 <h3>Recent</h3>
                 <ul id="recent-list">
-                    <li>Who Are You?</li>
-                </ul>
+                    </ul>
             </div>
             <div class="sidebar-bottom">
                 <a href="#" title="Help"><i class="fas fa-question-circle"></i> Help</a>
@@ -346,9 +353,8 @@ body {
             </div>
         </aside>
         <main class="main-content">
-            <div class="welcome-message">
-                <h1>Hello, Joyance</h1>
-                <p>Start a new conversation or select from recent chats.</p>
+            <div id="chat-area" class="chat-area">
+                <div class="ai-message message">Hello, how can I help you today?</div>
             </div>
             <div class="input-area">
                 <input type="text" id="prompt-input" placeholder="Ask Gemini">
@@ -368,6 +374,10 @@ body {
             const apiKeyInput = document.getElementById('api-key');
             const saveApiKeyButton = document.getElementById('save-api-key');
             const changeApiKeyButton = document.getElementById('change-api-key');
+            const chatArea = document.getElementById('chat-area');
+            const newChatButton = document.querySelector('.new-chat-button button');
+
+            let chatHistory = [{ sender: "ai", text: "Hello, how can I help you today?" }]; // Initialize chat history
 
             // Helper function to set a cookie
             function setCookie(name, value, days) {
@@ -375,7 +385,6 @@ body {
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 const expires = "expires=" + date.toUTCString();
                 document.cookie = name + "=" + value + ";" + expires + ";path=/";
-                console.log(`[setCookie] Setting cookie: ${name}=${value}`);
             }
 
             // Helper function to get a cookie
@@ -389,12 +398,9 @@ body {
                         c = c.substring(1);
                     }
                     if (c.indexOf(cookieName) === 0) {
-                        const cookieValue = c.substring(cookieName.length, c.length);
-                        console.log(`[getCookie] Retrieved cookie: ${name}=${cookieValue}`);
-                        return cookieValue;
+                        return c.substring(cookieName.length, c.length);
                     }
                 }
-                console.log(`[getCookie] Cookie not found: ${name}`);
                 return "";
             }
 
@@ -404,8 +410,6 @@ body {
                 apiKeyInput.value = storedApiKey;
                 apiKeyInputArea.style.display = 'none';
                 changeApiKeyButton.style.display = 'block';
-            } else {
-                console.log("[DOMContentLoaded] No API key found in cookie.");
             }
 
             // Event listener for Save API Key button
@@ -434,52 +438,60 @@ body {
 
             modelDropdown.addEventListener('change', () => {
                 console.log('Selected model:', modelDropdown.value);
-                // You would potentially trigger an API call or update UI elements here
             });
 
-            function addRecentChat(message) {
-                const listItem = document.createElement('li');
-                listItem.textContent = message;
-                recentList.appendChild(listItem);
+            function displayMessage(sender, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', `${sender}-message`);
+                messageDiv.textContent = message;
+                chatArea.appendChild(messageDiv);
+                chatArea.scrollTop = chatArea.scrollHeight; // Scroll to bottom
             }
 
-            promptInput.addEventListener('keydown', (event) => {
+            newChatButton.addEventListener('click', () => {
+                chatHistory = [];
+                chatArea.innerHTML = ''; // Clear the chat area
+                displayMessage('ai', 'Hello, how can I help you today?');
+                chatHistory.push({ sender: 'ai', text: 'Hello, how can I help you today?' });
+            });
+
+            promptInput.addEventListener('keydown', async (event) => {
                 if (event.key === 'Enter') {
                     const prompt = promptInput.value.trim();
                     const apiKey = getCookie('geminiApiKey');
                     const selectedModel = modelDropdown.value;
 
-                    console.log("[promptInput] Checking API Key:", apiKey);
-
                     if (prompt && apiKey) {
-                        console.log('User asked:', prompt);
-                        console.log('Using API Key:', apiKey);
-                        console.log('Using Model:', selectedModel);
-                        addRecentChat(prompt);
+                        displayMessage('user', prompt);
+                        chatHistory.push({ sender: 'user', text: prompt });
                         promptInput.value = '';
 
-                        // Basic fetch API call (replace with your actual implementation)
-                        fetch('YOUR_GEMINI_API_ENDPOINT', {
-                            method: 'POST', // Or 'GET' depending on your API
-                            headers: {
-                                'Content-Type': 'application/json', // Adjust if needed
-                                'Authorization': `Bearer ${apiKey}` // Or however your API requires authentication
-                            },
-                            body: JSON.stringify({
-                                prompt: prompt,
-                                model: selectedModel
-                                // Add any other necessary parameters
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('Gemini response:', data);
-                            // **Here you would handle the response and display it in the UI**
-                        })
-                        .catch(error => {
+                        try {
+                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey}`
+                                },
+                                body: JSON.stringify({
+                                    messages: chatHistory, // Send the entire chat history
+                                    model: selectedModel
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const data = await response.json();
+                            const aiResponse = data.response; // Adjust based on your API response structure
+                            displayMessage('ai', aiResponse);
+                            chatHistory.push({ sender: 'ai', text: aiResponse });
+
+                        } catch (error) {
                             console.error('Error calling Gemini API:', error);
-                            // **Handle errors appropriately**
-                        });
+                            displayMessage('ai', 'Sorry, I encountered an error.');
+                        }
 
                     } else if (!apiKey) {
                         alert('Please enter and save your API key.');
@@ -487,20 +499,19 @@ body {
                 }
             });
 
-            // Local Storage for Recent Chats (Basic)
-            function saveRecentChats() {
-                const chats = Array.from(recentList.children).map(li => li.textContent);
-                localStorage.setItem('recentChats', JSON.stringify(chats));
-            }
-
+            // Load Recent Chats (Placeholder - needs backend integration for real history)
             function loadRecentChats() {
-                const savedChats = localStorage.getItem('recentChats');
-                if (savedChats) {
-                    const chats = JSON.parse(savedChats);
-                    chats.forEach(chat => addRecentChat(chat));
-                }
+                // In a real application, this would fetch recent chats from a backend
+                const recentChats = ["What is the capital of France?", "Explain quantum physics.", "Write a short poem about the moon."];
+                recentChats.forEach(chat => {
+                    const li = document.createElement('li');
+                    li.textContent = chat;
+                    recentList.appendChild(li);
+                    li.addEventListener('click', () => {
+                        promptInput.value = chat; // Populate input for re-sending or editing
+                    });
+                });
             }
-
             loadRecentChats();
         });
     </script>
