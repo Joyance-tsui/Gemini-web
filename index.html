@@ -70,37 +70,6 @@
             z-index: 10;
         }
 
-        .sidebar-top {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        .model-selector {
-            margin-bottom: 15px;
-        }
-
-        .model-selector label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-            color: #777;
-        }
-
-        .model-selector select {
-            width: calc(100% - 12px);
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            appearance: none;
-            background-color: white;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-            background-repeat: no-repeat;
-            background-position-x: calc(100% - 5px);
-            background-position-y: center;
-            cursor: pointer;
-            font-size: 0.95em;
-        }
-
         .api-key-section {
             margin-bottom: 20px;
         }
@@ -156,6 +125,36 @@
             margin-right: 8px;
         }
 
+        .recent-chats {
+            margin-bottom: 30px;
+        }
+
+        .recent-chats h3 {
+            margin-top: 0;
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .recent-chats ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .recent-chats li {
+            padding: 8px 0;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-size: 0.95em;
+        }
+
+        .recent-chats li:hover {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            padding-left: 5px;
+        }
+
         .sidebar-bottom {
             margin-top: auto;
             display: flex;
@@ -191,18 +190,27 @@
             align-items: center;
         }
 
-        .settings-area, .history-area {
+        .chat-header {
             width: 100%;
             max-width: 700px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .settings-area h2, .history-area h2 {
-            margin-top: 0;
-            margin-bottom: 15px;
+        .chat-header select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            appearance: none;
+            background-color: white;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: calc(100% - 5px);
+            background-position-y: center;
+            cursor: pointer;
+            font-size: 0.95em;
         }
 
         .chat-area {
@@ -223,6 +231,7 @@
             border-radius: 10px;
             margin-bottom: 10px;
             word-wrap: break-word;
+            position: relative;
         }
 
         .user-message {
@@ -233,6 +242,23 @@
         .ai-message {
             background-color: #f0f0f0;
             align-self: flex-start;
+        }
+
+        .ai-message .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8em;
+            color: #777;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .ai-message:hover .copy-button {
+            opacity: 1;
         }
 
         .input-area {
@@ -300,20 +326,6 @@
     <div class="container">
         <aside class="sidebar">
             <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-            <div class="sidebar-top">
-                <div class="model-selector">
-                    <label for="model-dropdown">Model</label>
-                    <select id="model-dropdown">
-                        <option value="gemini-2.0-flash-thinking-exp-1219">Gemini 2.0 Flash (Thinking)</option>
-                        <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash</option>
-                        <option value="gemini-exp-1206">Gemini (Experimental)</option>
-                        <option value="learnlm-1.5-pro-experimental">LearnLM 1.5 Pro (Experimental)</option>
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                        <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                    </select>
-                </div>
-            </div>
 
             <div class="api-key-section">
                 <label for="api-key">API Key</label>
@@ -327,31 +339,23 @@
             <div class="new-chat-button">
                 <button><i class="fas fa-plus"></i> New chat</button>
             </div>
-            <div class="sidebar-bottom">
-                <a href="#" id="show-history-btn" title="History"><i class="fas fa-history"></i> History</a>
-                <a href="#" id="show-settings-btn" title="Settings"><i class="fas fa-cog"></i> Settings</a>
-                <a href="#" title="Help"><i class="fas fa-question-circle"></i> Help</a>
+            <div class="recent-chats">
+                <h3>History</h3>
+                <ul id="history-list"></ul>
             </div>
         </aside>
         <main class="main-content">
-            <div id="settings-area" class="settings-area" style="display: none;">
-                <h2>Settings</h2>
-                <p>API Key: <span id="display-api-key"></span> <button id="change-api-inline">Change</button></p>
-                <div id="inline-api-change" style="display: none;">
-                    <input type="text" id="new-api-key-inline" placeholder="New API Key">
-                    <button id="save-api-inline">Save</button>
-                    <button id="cancel-api-inline">Cancel</button>
-                </div>
-                <p>Model: <select id="display-model"></select></p>
-                <!-- Add more settings as needed -->
+            <div id="chat-header" class="chat-header">
+                <select id="model-dropdown">
+                    <option value="gemini-2.0-flash-thinking-exp-1219">Gemini 2.0 Flash (Thinking)</option>
+                    <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash</option>
+                    <option value="gemini-exp-1206">Gemini (Experimental)</option>
+                    <option value="learnlm-1.5-pro-experimental">LearnLM 1.5 Pro (Experimental)</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                </select>
             </div>
-
-            <div id="history-area" class="history-area" style="display: none;">
-                <h2>Chat History</h2>
-                <ul id="history-list">
-                    </ul>
-            </div>
-
             <div id="chat-area" class="chat-area">
                 <div class="ai-message message">Hello, how can I help you today?</div>
             </div>
@@ -363,7 +367,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.sidebar');
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const modelDropdown = document.getElementById('model-dropdown');
@@ -374,22 +378,12 @@
             const changeApiKeyButton = document.getElementById('change-api-key');
             const chatArea = document.getElementById('chat-area');
             const newChatButton = document.querySelector('.new-chat-button button');
-            const historyArea = document.getElementById('history-area');
             const historyList = document.getElementById('history-list');
-            const showHistoryBtn = document.getElementById('show-history-btn');
-            const settingsArea = document.getElementById('settings-area');
-            const showSettingsBtn = document.getElementById('show-settings-btn');
-            const displayApiKey = document.getElementById('display-api-key');
-            const displayModel = document.getElementById('display-model');
-            const changeApiInlineBtn = document.getElementById('change-api-inline');
-            const inlineApiChangeDiv = document.getElementById('inline-api-change');
-            const newApiKeyInlineInput = document.getElementById('new-api-key-inline');
-            const saveApiInlineBtn = document.getElementById('save-api-inline');
-            const cancelApiInlineBtn = document.getElementById('cancel-api-inline');
 
-            let chatHistory = [{ sender: "ai", text: "Hello, how can I help you today?" }];
+            let chatHistory = [];
+            let currentChatId = null; // To identify the current conversation
 
-            // Helper functions for cookies (same as before)
+            // Helper functions for cookies
             function setCookie(name, value, days) {
                 const date = new Date();
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -419,7 +413,6 @@
                 apiKeyInput.value = storedApiKey;
                 apiKeyInputArea.style.display = 'none';
                 changeApiKeyButton.style.display = 'block';
-                displayApiKey.textContent = storedApiKey.substring(0, 4) + '...' + storedApiKey.slice(-4);
             }
 
             // Event listeners for API Key management
@@ -429,7 +422,6 @@
                     setCookie('geminiApiKey', apiKey, 30);
                     apiKeyInputArea.style.display = 'none';
                     changeApiKeyButton.style.display = 'block';
-                    displayApiKey.textContent = apiKey.substring(0, 4) + '...' + apiKey.slice(-4);
                 } else {
                     alert('Please enter your API key.');
                 }
@@ -441,66 +433,9 @@
                 apiKeyInput.value = '';
             });
 
-            changeApiInlineBtn.addEventListener('click', () => {
-                inlineApiChangeDiv.style.display = 'block';
-            });
-
-            cancelApiInlineBtn.addEventListener('click', () => {
-                inlineApiChangeDiv.style.display = 'none';
-            });
-
-            saveApiInlineBtn.addEventListener('click', () => {
-                const newApiKey = newApiKeyInlineInput.value.trim();
-                if (newApiKey) {
-                    setCookie('geminiApiKey', newApiKey, 30);
-                    displayApiKey.textContent = newApiKey.substring(0, 4) + '...' + newApiKey.slice(-4);
-                    inlineApiChangeDiv.style.display = 'none';
-                } else {
-                    alert('Please enter the new API key.');
-                }
-            });
-
             // Sidebar toggle
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
-            });
-
-            // Populate model dropdown in settings
-            const modelOptions = Array.from(modelDropdown.options).map(option => ({ value: option.value, text: option.text }));
-            modelOptions.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option.value;
-                optionElement.textContent = option.text;
-                displayModel.appendChild(optionElement);
-            });
-            displayModel.value = modelDropdown.value;
-            displayModel.addEventListener('change', () => {
-                modelDropdown.value = displayModel.value;
-            });
-
-            // Navigation for History and Settings
-            showHistoryBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                historyArea.style.display = 'block';
-                chatArea.style.display = 'none';
-                settingsArea.style.display = 'none';
-            });
-
-            showSettingsBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                settingsArea.style.display = 'block';
-                chatArea.style.display = 'none';
-                historyArea.style.display = 'none';
-            });
-
-            newChatButton.addEventListener('click', () => {
-                chatHistory = [];
-                chatArea.innerHTML = '';
-                displayMessage('ai', 'Hello, how can I help you today?');
-                chatHistory.push({ sender: 'ai', text: 'Hello, how can I help you today?' });
-                chatArea.style.display = 'flex';
-                historyArea.style.display = 'none';
-                settingsArea.style.display = 'none';
             });
 
             function displayMessage(sender, message) {
@@ -509,16 +444,66 @@
                 messageDiv.textContent = message;
                 chatArea.appendChild(messageDiv);
                 chatArea.scrollTop = chatArea.scrollHeight;
+
+                if (sender === 'ai') {
+                    const copyButton = document.createElement('button');
+                    copyButton.classList.add('copy-button');
+                    copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+                    copyButton.addEventListener('click', () => {
+                        navigator.clipboard.writeText(message);
+                    });
+                    messageDiv.appendChild(copyButton);
+                }
             }
 
-            function displayHistory() {
-                historyList.innerHTML = ''; // Clear previous history
+            function startNewChat() {
+                currentChatId = Date.now().toString(); // Unique ID for the new chat
+                chatHistory = [];
+                chatArea.innerHTML = '';
+                const initialAiMessage = 'Hello, how can I help you today?';
+                displayMessage('ai', initialAiMessage);
+                chatHistory.push({ sender: 'ai', text: initialAiMessage });
+                saveChatHistory();
+            }
+
+            function loadChatHistory() {
+                const savedHistory = localStorage.getItem('chatHistory');
+                if (savedHistory) {
+                    // For simplicity, loading all history. In real app, manage individual chats.
+                    const parsedHistory = JSON.parse(savedHistory);
+                    historyList.innerHTML = '';
+                    parsedHistory.forEach(chat => {
+                        const li = document.createElement('li');
+                        li.textContent = `Chat started ${new Date(parseInt(chat.id)).toLocaleString()}`;
+                        li.addEventListener('click', () => {
+                            loadExistingChat(chat.id, chat.history);
+                        });
+                        historyList.appendChild(li);
+                    });
+                }
+            }
+
+            function saveChatHistory() {
+                const savedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+                const existingChatIndex = savedHistory.findIndex(chat => chat.id === currentChatId);
+                if (existingChatIndex > -1) {
+                    savedHistory[existingChatIndex] = { id: currentChatId, history: chatHistory };
+                } else {
+                    savedHistory.push({ id: currentChatId, history: chatHistory });
+                }
+                localStorage.setItem('chatHistory', JSON.stringify(savedHistory));
+            }
+
+            function loadExistingChat(chatId, history) {
+                currentChatId = chatId;
+                chatHistory = history;
+                chatArea.innerHTML = '';
                 chatHistory.forEach(msg => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${msg.sender}: ${msg.text}`;
-                    historyList.appendChild(listItem);
+                    displayMessage(msg.sender, msg.text);
                 });
             }
+
+            newChatButton.addEventListener('click', startNewChat);
 
             promptInput.addEventListener('keydown', async (event) => {
                 if (event.key === 'Enter') {
@@ -526,21 +511,28 @@
                     const apiKey = getCookie('geminiApiKey');
                     const selectedModel = modelDropdown.value;
 
+                    if (!currentChatId) {
+                        startNewChat();
+                    }
+
                     if (prompt && apiKey) {
                         displayMessage('user', prompt);
                         chatHistory.push({ sender: 'user', text: prompt });
                         promptInput.value = '';
-                        displayHistory(); // Update history after user message
+                        saveChatHistory();
 
                         try {
-                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', {
+                            const response = await fetch('YOUR_GEMINI_API_ENDPOINT', { // Replace with your actual endpoint
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'Authorization': `Bearer ${apiKey}`
                                 },
                                 body: JSON.stringify({
-                                    messages: chatHistory,
+                                    messages: chatHistory.map(msg => ({
+                                        role: msg.sender === 'user' ? 'user' : 'assistant',
+                                        parts: [{ text: msg.text }]
+                                    })),
                                     model: selectedModel
                                 })
                             });
@@ -552,10 +544,10 @@
                             }
 
                             const data = await response.json();
-                            const aiResponse = data.response;
+                            const aiResponse = data.candidates[0].content.parts[0].text; // Adjust based on actual response structure
                             displayMessage('ai', aiResponse);
                             chatHistory.push({ sender: 'ai', text: aiResponse });
-                            displayHistory(); // Update history after AI response
+                            saveChatHistory();
 
                         } catch (error) {
                             console.error('Error calling Gemini API:', error);
@@ -567,7 +559,11 @@
                     }
                 }
             });
-            displayHistory(); // Initial display of history
+
+            loadChatHistory(); // Load history on page load
+            if (!chatHistory.length) {
+                startNewChat(); // Start a new chat if no history
+            }
         });
     </script>
 </body>
