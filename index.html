@@ -56,39 +56,6 @@
             z-index: 10;
         }
 
-        .api-key-section {
-            margin-bottom: 20px;
-        }
-
-        .api-key-input-area {
-            display: flex;
-            gap: 10px;
-        }
-
-        .api-key-input-area input[type="text"] {
-            flex-grow: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            outline: none;
-            font-size: 0.95em;
-        }
-
-        .api-key-section button {
-            padding: 8px 12px;
-            border: none;
-            background-color: #4285f4;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.95em;
-        }
-
-        .api-key-section button.change-api-button {
-            background-color: #fbbc05;
-            color: #333;
-        }
-
         .new-chat-button button {
             width: 100%;
             padding: 10px;
@@ -292,15 +259,6 @@
         <aside class="sidebar">
             <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
 
-            <div class="api-key-section">
-                <label for="api-key">API Key</label>
-                <div class="api-key-input-area" id="api-key-input-area">
-                    <input type="text" id="api-key" placeholder="Enter your API key">
-                    <button id="save-api-key">Save API</button>
-                </div>
-                <button id="change-api-key" class="change-api-button" style="display: none;">Change API</button>
-            </div>
-
             <div class="new-chat-button">
                 <button><i class="fas fa-plus"></i> New chat</button>
             </div>
@@ -338,67 +296,13 @@
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const modelDropdown = document.getElementById('model-dropdown');
             const promptInput = document.getElementById('prompt-input');
-            const apiKeyInputArea = document.getElementById('api-key-input-area');
-            const apiKeyInput = document.getElementById('api-key');
-            const saveApiKeyButton = document.getElementById('save-api-key');
-            const changeApiKeyButton = document.getElementById('change-api-key');
             const chatArea = document.getElementById('chat-area');
             const newChatButton = document.querySelector('.new-chat-button button');
             const historyList = document.getElementById('history-list');
 
             let chatHistory = [];
             let currentChatId = null;
-            let geminiApiKey = getCookie('geminiApiKey'); // Get API key
-
-            // Helper functions for cookies (remains the same)
-            function setCookie(name, value, days) {
-                const date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                const expires = "expires=" + date.toUTCString();
-                document.cookie = name + "=" + value + ";" + expires + ";path=/";
-            }
-
-            function getCookie(name) {
-                const cookieName = name + "=";
-                const decodedCookie = decodeURIComponent(document.cookie);
-                const ca = decodedCookie.split(';');
-                for (let i = 0; i < ca.length; i++) {
-                    let c = ca[i];
-                    while (c.charAt(0) === ' ') {
-                        c = c.substring(1);
-                    }
-                    if (c.indexOf(cookieName) === 0) {
-                        return c.substring(cookieName.length, c.length);
-                    }
-                }
-                return "";
-            }
-
-            // Load API key from cookie
-            if (geminiApiKey) {
-                apiKeyInput.value = geminiApiKey;
-                apiKeyInputArea.style.display = 'none';
-                changeApiKeyButton.style.display = 'block';
-            }
-
-            // Event listeners for API Key management (remains the same)
-            saveApiKeyButton.addEventListener('click', () => {
-                const apiKey = apiKeyInput.value.trim();
-                if (apiKey) {
-                    setCookie('geminiApiKey', apiKey, 30);
-                    geminiApiKey = apiKey; // Update the variable
-                    apiKeyInputArea.style.display = 'none';
-                    changeApiKeyButton.style.display = 'block';
-                } else {
-                    alert('Please enter your API key.');
-                }
-            });
-
-            changeApiKeyButton.addEventListener('click', () => {
-                apiKeyInputArea.style.display = 'flex';
-                changeApiKeyButton.style.display = 'none';
-                apiKeyInput.value = '';
-            });
+            const geminiApiKey = 'AIzaSyBfSO-77CRU2VLsw5wt7wAqOK0xYUzmGd0'; // Hardcoded API Key
 
             // Sidebar toggle (remains the same)
             sidebarToggle.addEventListener('click', () => {
@@ -479,15 +383,14 @@
                         startNewChat();
                     }
 
-                    if (prompt && geminiApiKey) {
+                    if (prompt) {
                         displayMessage('user', prompt);
                         chatHistory.push({ sender: 'user', text: prompt });
                         saveChatHistory();
                         promptInput.value = '';
 
                         try {
-                            // **🔑 IMPORTANT: Replace with the CORRECT Gemini API endpoint for starting/continuing a chat session**
-                            const API_ENDPOINT = 'YOUR_GEMINI_CHAT_API_ENDPOINT'; //  <-----  CHANGE THIS!
+                            const API_ENDPOINT = `https://generativeai.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
 
                             const response = await fetch(API_ENDPOINT, {
                                 method: 'POST',
@@ -496,12 +399,10 @@
                                     'Authorization': `Bearer ${geminiApiKey}`
                                 },
                                 body: JSON.stringify({
-                                    model: selectedModel,
-                                    messages: chatHistory.map(msg => ({
-                                        role: msg.sender === 'user' ? 'user' : 'assistant',
+                                    contents: chatHistory.map(msg => ({
+                                        role: msg.sender === 'user' ? 'user' : 'model',
                                         parts: [{ text: msg.text }]
                                     }))
-                                    // ** Potentially add a "stream" or similar parameter if the API supports streaming **
                                 })
                             });
 
@@ -512,7 +413,6 @@
                             }
 
                             const data = await response.json();
-                            // **🔑  Adapt this part based on the RESPONSE format of your Gemini Chat API **
                             let aiResponse = null;
                             if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
                                 aiResponse = data.candidates[0].content.parts.map(part => part.text).join("");
@@ -531,9 +431,6 @@
                             console.error('Error calling Gemini API:', error);
                             displayMessage('ai', 'Sorry, I encountered an error.');
                         }
-
-                    } else if (!geminiApiKey) {
-                        alert('Please enter and save your API key.');
                     }
                 }
             });
